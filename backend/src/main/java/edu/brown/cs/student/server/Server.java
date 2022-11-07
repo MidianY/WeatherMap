@@ -14,7 +14,7 @@ public class Server {
   public static void main(String[] args) {
     CurrentData currentData = new CurrentData();
     currentData.setList(null);
-    Spark.port(3232);
+    Spark.port(3000);
 
     after(
         (request, response) -> {
