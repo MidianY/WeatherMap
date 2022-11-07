@@ -1,4 +1,4 @@
-# Sprint 3: Terminal
+# Integration
 
 1. Project Details
 2. Backend
