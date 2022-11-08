@@ -2,17 +2,21 @@ package edu.brown.cs.student.server;
 
 import com.squareup.moshi.Moshi;
 import edu.brown.cs.student.server.errorRepsonses.BadJsonError;
+import edu.brown.cs.student.server.weather.ForecastProperties;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class GeoJsonHandler implements Route {
+    public String data;
 
     public GeoJsonHandler() {
 
@@ -25,6 +29,7 @@ public class GeoJsonHandler implements Route {
      */
     @Override
     public Object handle(Request request, Response response) throws Exception {
+        this.data = new String(Files.readAllBytes(Paths.get("src/main/java/edu/brown/cs32/sprint2/Handlers/fullDownload copy.geojson.json")));
         QueryParamsMap qm = request.queryMap();
         String minlat = qm.value("minlat");
         String maxlat = qm.value("maxlat");
@@ -43,12 +48,30 @@ public class GeoJsonHandler implements Route {
             float maxLon = Float.parseFloat(maxlon);
 
 
-        } catch (Exception e) {
 
+        } catch (Exception e) {
+            return new BadJsonError().serialize();
         }
         return null;
 
     }
+
+    public void filterData(float minLat, float maxLat, float minLon, float maxLon){
+
+//        for (Feature feature : this.data){
+//
+//        }
+
+    }
+
+
+
+//    public void getFeatures(){
+//        Moshi moshi = new Moshi.Builder().build();
+//        ForecastProperties serializedForecast =
+//                moshi.adapter(ForecastProperties.class).fromJson(response);
+//        int temp = serializedForecast.properties.periods.get(0).temperature;
+//    }
 
     public record GeoJsonSuccessResponse(String minLat, String maxLat, String minLon, String maxLon,
                                          List<List<String>> data) {
@@ -67,6 +90,9 @@ public class GeoJsonHandler implements Route {
             return moshi.adapter(Map.class).toJson(result);
         }
     }
+
+    public record Feature(String type, Geometry geometry, Map<String, Object> properties){}
+    public record Geometry(String type, List<List<List<List<Float>>>> coordinates) {}
 }
 
 
