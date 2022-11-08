@@ -1,5 +1,6 @@
 package edu.brown.cs.student.server;
 
+import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.brown.cs.student.server.errorRepsonses.BadJsonError;
 import edu.brown.cs.student.server.weather.ForecastProperties;
@@ -8,6 +9,7 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -16,11 +18,18 @@ import java.util.List;
 import java.util.Map;
 
 public class GeoJsonHandler implements Route {
-    public String data;
+    private FeatureCollection data;
 
-    public GeoJsonHandler() {
-
+    public GeoJsonHandler() throws IOException {
+        try {
+            String redliningData = new String(Files.readAllBytes(Paths.get("data/redlining/redlining.geojson")));
+            Moshi moshi = new Moshi.Builder().build();
+            this.data = moshi
+                    .adapter(FeatureCollection.class)
+                    .fromJson(redliningData);
+        }catch (Exception e){}
     }
+
     /**
      * @param request
      * @param response
@@ -29,61 +38,58 @@ public class GeoJsonHandler implements Route {
      */
     @Override
     public Object handle(Request request, Response response) throws Exception {
-        this.data = new String(Files.readAllBytes(Paths.get("src/main/java/edu/brown/cs32/sprint2/Handlers/fullDownload copy.geojson.json")));
         QueryParamsMap qm = request.queryMap();
-        String minlat = qm.value("minlat");
-        String maxlat = qm.value("maxlat");
-        String minlon = qm.value("minlon");
-        String maxlon = qm.value("maxlon");
-
-        String filepath = "data/redlining/redlining.geojson";
+        String minLat = qm.value("minLat");
+        String maxLat = qm.value("maxLat");
+        String minLon = qm.value("minLon");
+        String maxLon = qm.value("maxLon");
 
         try {
-            if (!qm.hasKey("minlat") | !qm.hasKey("maxlat") | !qm.hasKey("minlon") | !qm.hasKey("maxlon")) {
+            if (!qm.hasKey("minLat") | !qm.hasKey("maxLat") | !qm.hasKey("minLon") | !qm.hasKey("maxLon")) {
                 return new BadJsonError().serialize();
             }
-            float minLat = Float.parseFloat(minlat);
-            float maxLat = Float.parseFloat(maxlat);
-            float minLon = Float.parseFloat(minlon);
-            float maxLon = Float.parseFloat(maxlon);
+            float fMinLat = Float.parseFloat(minLat);
+            float fMaxLat = Float.parseFloat(maxLat);
+            float fMinLon = Float.parseFloat(minLon);
+            float fMaxLon = Float.parseFloat(maxLon);
 
-
+            List<Features> finalList = this.filterFeatures(fMinLat, fMaxLat, fMinLon, fMaxLon);
+            System.out.println(finalList);
+            return new GeoJsonSuccessResponse(finalList).serialize();
 
         } catch (Exception e) {
             return new BadJsonError().serialize();
         }
-        return null;
+    }
+
+    public List<Features> filterFeatures(float minLat, float maxLat, float minLon, float maxLon) throws IOException {
+        List<Features> filteredFeatures = new ArrayList<>();
+
+        outer: for(Features features: this.data.features()){
+            if(features.geometry == null){
+                continue;
+            }
+            List<List<Float>> innerBound = features.geometry.coordinates.get(0).get(0);
+            for(List<Float> bounds: innerBound){
+                float lon = bounds.get(0);
+                float lat = bounds.get(1);
+
+                if(minLat>lat || lat>maxLat || minLon>lon || maxLon<lon){
+                    continue outer;
+                }
+            }
+            filteredFeatures.add(features);
+        }
+        return filteredFeatures;
 
     }
 
-    public void filterData(float minLat, float maxLat, float minLon, float maxLon){
-
-//        for (Feature feature : this.data){
-//
-//        }
-
-    }
-
-
-
-//    public void getFeatures(){
-//        Moshi moshi = new Moshi.Builder().build();
-//        ForecastProperties serializedForecast =
-//                moshi.adapter(ForecastProperties.class).fromJson(response);
-//        int temp = serializedForecast.properties.periods.get(0).temperature;
-//    }
-
-    public record GeoJsonSuccessResponse(String minLat, String maxLat, String minLon, String maxLon,
-                                         List<List<String>> data) {
+    public record GeoJsonSuccessResponse(List<Features> data) {
         /**
          * @return this response, serialized as Json
          */
         String serialize() {
             HashMap<String, Object> result = new HashMap<>();
-            result.put("minlat", minLat);
-            result.put("maxlat", maxLat);
-            result.put("minlon", minLon);
-            result.put("maxlon", maxLon);
             result.put("data", data);
             result.put("result", "success");
             Moshi moshi = new Moshi.Builder().build();
@@ -91,7 +97,10 @@ public class GeoJsonHandler implements Route {
         }
     }
 
-    public record Feature(String type, Geometry geometry, Map<String, Object> properties){}
+    public record FeatureCollection(String type, List<Features> features) {}
+
+    public record Features(String type, Geometry geometry, Map<String, Object> properties) {}
+
     public record Geometry(String type, List<List<List<List<Float>>>> coordinates) {}
 }
 
