@@ -52,7 +52,7 @@ public class GeoJsonHandler implements Route {
             float fMinLon = Float.parseFloat(minLon);
             float fMaxLon = Float.parseFloat(maxLon);
 
-            List<Features> finalList = this.filterFeatures(fMinLat, fMaxLat, fMinLon, fMaxLon);
+            List<Features> finalList = this.filterFeatures(fMinLon, fMaxLon, fMinLat, fMaxLat);
 
             return new GeoJsonSuccessResponse(finalList).serialize();
 
@@ -61,7 +61,7 @@ public class GeoJsonHandler implements Route {
         }
     }
 
-    public List<Features> filterFeatures(float minLat, float maxLat, float minLon, float maxLon) throws IOException {
+    public List<Features> filterFeatures(float minLon, float maxLon, float minLat, float maxLat) throws IOException {
         List<Features> filteredFeatures = new ArrayList<>();
 
         outer: for(Features features: this.data.features()){
@@ -101,6 +101,16 @@ public class GeoJsonHandler implements Route {
     public record Features(String type, Geometry geometry, Map<String, Object> properties) {}
 
     public record Geometry(String type, List<List<List<List<Float>>>> coordinates) {}
+
+    public void setData(String filepath){
+        try {
+            String redliningData = new String(Files.readAllBytes(Paths.get(filepath)));
+            Moshi moshi = new Moshi.Builder().build();
+            this.data = moshi
+                    .adapter(FeatureCollection.class)
+                    .fromJson(redliningData);
+        }catch (Exception e){}
+    }
 }
 
 
