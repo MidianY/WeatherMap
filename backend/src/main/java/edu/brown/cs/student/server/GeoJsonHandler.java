@@ -30,12 +30,11 @@ public class GeoJsonHandler implements Route {
         }catch (Exception e){}
     }
 
-    /**
-     * @param request
-     * @param response
-     * @return
-     * @throws Exception
-     */
+    public FeatureCollection getData(){
+        return this.data;
+    }
+
+
     @Override
     public Object handle(Request request, Response response) throws Exception {
         QueryParamsMap qm = request.queryMap();
@@ -54,7 +53,7 @@ public class GeoJsonHandler implements Route {
             float fMaxLon = Float.parseFloat(maxLon);
 
             List<Features> finalList = this.filterFeatures(fMinLat, fMaxLat, fMinLon, fMaxLon);
-            System.out.println(finalList);
+
             return new GeoJsonSuccessResponse(finalList).serialize();
 
         } catch (Exception e) {
