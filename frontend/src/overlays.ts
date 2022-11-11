@@ -1,46 +1,12 @@
 import { FeatureCollection } from "geojson";
 import { FillLayer } from "react-map-gl";
-
-// Import the raw JSON file
 import rl_data from "./mockData/fullDownload.json"
-
-
-interface LoadMapResponse {
-  result: string
-  data: string
-}
-
-
-// async function getMap(): Promise<string> {
-//   const SERVER = `http://localhost:3232`
-//   return fetch(`${SERVER}/geo_data?minLat=0&maxLat=35&minLon=-100&maxLon=100`)
-//   .then(loadResponse => loadResponse.json())
-//   .then((loadResponseJson: LoadMapResponse) => {
-//       if (loadResponseJson.result == `success`) {
-//           console.log("response " + loadResponseJson.result);
-//           console.log("points: " + loadResponseJson.data);
-//           const mapData = loadResponseJson.data
-//           return mapData.toString()
-//       // if get fail, return get result (i don't think this would happen)
-//       } else {
-//         return 'unable to load map overlay data'
-//       }
-//       })
-//   }
-
-//    const rl_data1 = getMap()
-
 
 
  function isFeatureCollection(json: any): json is FeatureCollection {
   return json.type === "FeatureCollection";
 }
 
-// export function overlayData(): GeoJSON.FeatureCollection | undefined {
-//   if(isFeatureCollection(rl_data))
-//     return rl_data
-//   return undefined
-// }
 
 export function overlayData(response : any):GeoJSON.FeatureCollection | undefined{
 
@@ -51,9 +17,6 @@ export function overlayData(response : any):GeoJSON.FeatureCollection | undefine
   return undefined
   
 }
-
-
-
 
 const BASE_URL = "http://localhost:3232/";
 

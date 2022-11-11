@@ -10,11 +10,10 @@ import Map, {
 //  key from denial-of-service attack...)
 import {myKey} from './private/keyStore'
 
-import { geoLayer, fetchMapData} from './overlays' 
+import {geoLayer, fetchMapData} from './overlays' 
 
-const TEXT_no_location_selected = "Nothing is selected"
-const TEXT_location_data_not_found = "No data found for this point"
-
+export const TEXT_no_location_selected = "Nothing is selected"
+export const TEXT_location_data_not_found = "No data found for this point"
 
 function findLocation(ev: MapLayerMouseEvent, mapRef: RefObject<MapRef>, 
   setLocationData: Dispatch<SetStateAction<any>>){
