@@ -57,13 +57,13 @@ Because most of the `backend` code was adapted from a previous sprint, tests for
 4. Tests that check the filterFeatures method in the GeoJsonHandler class. These tests check if the filterFeature method filters the correct features using a mock GeoJson. Additionally we test filterFeature with min and max coordinates that are equal.
 5. Finally, we have fuzz testing. This test runs 100 times, producing random coordinates and making requests with these coordinates. This is to make sure that our program can handle all possible cases of inputs.
 
-
-
 To run the tests, navigate to the `frontend` directory and in the terminal run `npm test`.
-
+1. Tests if title of webapp is present in the app
+2. Tests if the state of the map when initially loading the map is at the correct location, one that we set
+3. Tests if the city, state, and name fields are undefined when the user loads the map as the user has not interacted with the webapp
 
 # Errors/Bugs
-No know errors or bugs
+No known errors or bugs
 
 # Contributors/Resources
 Collaborators: Ayush Gupta (agupt137) and kmirfakh
