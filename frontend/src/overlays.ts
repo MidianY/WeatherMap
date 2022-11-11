@@ -14,14 +14,15 @@ import rl_data from "./mockData/fullDownload.json"
 const URL = "http://localhost:3232/";
 
 /**
-* This function fetches the data from the 'geo_data' enpoint in the backend and returns all redlining data for major United States cities for areas that are provided within the given bounding box. This funciton returns a Promise either containing the data for the map or a undefined value if there are invalid inputs
+* This function fetches the data from the 'geo_data' enpoint in the backend and returns all redlining data for major United States cities for areas that are provided within the given bounding box.
  * 
  * @param minLat 
  * @param maxLat 
  * @param minLon 
  * @param maxLon 
- * @returns 
+ * @returns This funciton returns a Promise either containing the data for the map or a undefined value if there are invalid inputs
  */
+
 export function fetchMapData(minLat: number, maxLat: number, minLon: number, maxLon: number): Promise<FeatureCollection | undefined> {
   const url: string =
   URL + `geo_data?minLat=${minLat}&maxLat=${maxLat}&minLon=${minLon}&maxLon=${maxLon}`;

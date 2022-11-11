@@ -57,7 +57,7 @@ type LocationData = {
  * It initially sets the city, name, and state to indicate that nothing has been selected
  * It obtains the data that has been fetched from overlay.ts and sets the state to the data such that the map can reflect this data
  * 
- * @returns 
+ * @returns react components of Map features
  */
 export default function MapDemo() {
 
@@ -106,7 +106,6 @@ export default function MapDemo() {
          onClick={(ev: MapLayerMouseEvent) => {
           findLocation(ev, mapRef, setLocationData)}
          }
-         // This is too big, and the 0.9 factor is pretty hacky
          style={{width:window.innerWidth, height:window.innerHeight*0.9}} 
          mapStyle={'mapbox://styles/mapbox/light-v10'}>
 
