@@ -4,26 +4,25 @@ import Map, {
    MapLayerMouseEvent,
    Source, Layer, MapRef, MapboxGeoJSONFeature } from 'react-map-gl'  
 
-// This won't be pushed to the repo; add your own!
-// You'll need to have the file within the 'src' folder, though
-// (Make sure it's a "default public" key. I'm just protecting my 
-//  key from denial-of-service attack...)
 import {myKey} from './private/keyStore'
-
 import {geoLayer, fetchMapData} from './overlays' 
-
 export const TEXT_no_location_selected = "Nothing is selected"
 export const TEXT_location_data_not_found = "No data found for this point"
 
+/**
+ * This function finds the current location on the map based on where the user has clicked the screen. It access the GEOJson data and checks the properties and sets the value of the city, name, and state based on whether ti can access these valies. 
+ * @param ev 
+ * @param mapRef 
+ * @param setLocationData 
+ */
 function findLocation(ev: MapLayerMouseEvent, mapRef: RefObject<MapRef>, 
   setLocationData: Dispatch<SetStateAction<any>>){
 
-  //we set default responses 
+  //Responses set for the city, state and name
   let name_response = TEXT_location_data_not_found
   let city_response = TEXT_location_data_not_found
   let state_response = TEXT_location_data_not_found
-
-  //Parse geoData response
+  
   const map = mapRef.current
   if(map != null){
     const geoData: MapboxGeoJSONFeature = map.queryRenderedFeatures(ev.point)[0]
@@ -42,8 +41,10 @@ function findLocation(ev: MapLayerMouseEvent, mapRef: RefObject<MapRef>,
     }
   }
   
+  //Sets the location data based on responses of if statements above
   setLocationData({state: state_response, city: city_response, name: name_response})
 }
+
 
 type LocationData = {
   state: string,
@@ -51,17 +52,24 @@ type LocationData = {
   name: string
 }
 
-export default function Puzzle() {
-  // Providence is at {lat: 41.8245, long: -71.4129}
+/**
+ * Function contains most of the logic for the map. 
+ * It initially sets the city, name, and state to indicate that nothing has been selected
+ * It obtains the data that has been fetched from overlay.ts and sets the state to the data such that the map can reflect this data
+ * 
+ * @returns 
+ */
+export default function MapDemo() {
 
-     const [locationData, setLocationData] = useState<LocationData>({
-        state: TEXT_no_location_selected,
-        city: TEXT_no_location_selected,
-        name: TEXT_no_location_selected
-      });
-    
-      const mapRef = useRef<MapRef>(null)
+  const [locationData, setLocationData] = useState<LocationData>({
+    state: TEXT_no_location_selected,
+    city: TEXT_no_location_selected,
+    name: TEXT_no_location_selected
+  });
 
+  const mapRef = useRef<MapRef>(null)
+
+  //Initially sets the location to Atlanta 
   const [viewState, setViewState] = useState<ViewState>({
     longitude: -84.3110,
     latitude: 33.7457,
@@ -73,6 +81,7 @@ export default function Puzzle() {
   
   const [overlay, setOverlay] = useState<GeoJSON.FeatureCollection | undefined>(undefined)
 
+  //obtains the fetched data and reflects it on the map
   useEffect(() => {
     fetchMapData(viewState.latitude - 2, viewState.latitude + 2, viewState.longitude - 2, viewState.longitude + 2)
         .then(overlay => setOverlay(overlay));
