@@ -9,7 +9,7 @@ import java.io.IOException;
 
 /**
  * Top-level class for project. Contains the main() method which starts Spark and runs the various
- * handlers. We have three endpoints in this server, two of which share a share state of
+ * handlers. We have five endpoints in this server, three of which share a share state of
  * (currentData).
  */
 public class Server {

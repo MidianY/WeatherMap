@@ -21,9 +21,12 @@ import java.util.logging.Logger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+/**
+ * This class is meant to test our recently added GeoJsonHandler along with is endpoint on the server.
+ */
 public class TestGeoData {
 
-    public TestGeoData() throws IOException {
+    public TestGeoData(){
     }
 
     /** Method sets the Spark port number */
@@ -33,11 +36,17 @@ public class TestGeoData {
         Logger.getLogger("").setLevel(Level.WARNING);
     }
 
+    /**
+     * Her we create an instance of a GeoJsonHandler.
+     */
     final GeoJsonHandler GeoData = new GeoJsonHandler();
 
+    /**
+     * Adds geo_data path to server before each individual test
+     */
     @BeforeEach
-    public void setup() throws IOException {
-        Spark.get("geo_data", GeoData);
+    public void setup(){
+        Spark.get("geo_data", this.GeoData);
         Spark.init();
         Spark.awaitInitialization();
     }
@@ -67,6 +76,13 @@ public class TestGeoData {
         return clientConnection;
     }
 
+    /**
+     * This test checks the error messages that appear when the user inputs the parameters incorrectly. For example, it
+     * checks the error messages when the wrong parameters are passed in, letters are passed in instead of numbers, and
+     * too many parameters are passed in
+     *
+     * @throws IOException the requests cause the tests to throw an IOException if the connection fails
+     */
     @Test
     public void testWrongInput() throws IOException {
         HttpURLConnection clientConnection = tryRequest("geo_data?minLat=a&maxLat=b&minLon=c&maxLon=d");
@@ -100,6 +116,10 @@ public class TestGeoData {
         clientConnection.disconnect();
     }
 
+    /**
+     * This tests the error message that appears when a user enters not parameters to the geo_data endpoint
+     * @throws IOException if th connection fails for some reason
+     */
     @Test
     public void testNoInput() throws IOException {
         HttpURLConnection clientConnection = tryRequest("geo_data");
@@ -113,6 +133,10 @@ public class TestGeoData {
         clientConnection.disconnect();
     }
 
+    /**
+     * This tests the error message when not all four parameters are passed in
+     * @throws IOException if the connection fails
+     */
     @Test
     public void testMissingInput() throws IOException {
         HttpURLConnection clientConnection = tryRequest("geo_data?minLat=33&maxLat=35");
@@ -126,6 +150,10 @@ public class TestGeoData {
         clientConnection.disconnect();
     }
 
+    /**
+     * Tests that the code performs as expected when an invalid request is made followed by a valid one
+     * @throws IOException
+     */
     @Test
     public void testInvalidThenValid() throws IOException {
         HttpURLConnection clientConnection = tryRequest("geo_data");
@@ -150,6 +178,10 @@ public class TestGeoData {
         clientConnection.disconnect();
     }
 
+    /**
+     * Tests that the code performs as expected when a valid request is made followed by an invalid one
+     * @throws IOException
+     */
     @Test
     public void testValidThenInvalid() throws IOException {
         HttpURLConnection clientConnection = tryRequest("geo_data?minLat=33&maxLat=35&minLon=-86&maxLon=-84");
@@ -192,16 +224,23 @@ public class TestGeoData {
         clientConnection.disconnect();
     }
 
+    /**
+     * Checks that the features are not null when we instantiate the GeoJsonHandler and access the GeoJson through
+     * it
+     */
     @Test
-    public void getSuccessResponse() throws IOException {
+    public void getSuccessResponse(){
         GeoJsonHandler handler = new GeoJsonHandler();
         GeoJsonHandler.FeatureCollection features = handler.getData();
         assertNotNull(features);
         assertNotNull(features.features());
     }
 
+    /**
+     * Tests that the filterFeatures method returns a valid list of features
+     */
     @Test
-    public void filterTestSuccess() throws IOException {
+    public void filterTestSuccess(){
         GeoJsonHandler handler = new GeoJsonHandler();
         GeoJsonHandler.FeatureCollection features = handler.getData();
         List<GeoJsonHandler.Features> filterFeatures = handler.filterFeatures(-86, -84, 33, 35);
@@ -209,8 +248,11 @@ public class TestGeoData {
         assertNotNull(features.features());
     }
 
+    /**
+     * Tests that the filterFeatures method removes the correct features through a mock GeoJson
+     */
     @Test
-    public void filterFeatures() throws IOException {
+    public void filterFeatures(){
         GeoJsonHandler handler = new GeoJsonHandler();
         handler.setData("data/redlining/redlining_mock.geojson");
         GeoJsonHandler.FeatureCollection features = handler.getData();
@@ -227,14 +269,20 @@ public class TestGeoData {
         assertEquals(filterFeatures4.size(), 0);
     }
 
-    //ensure that it filters out of bounds
+    /**
+     * Ensures that no features are found when the min and max latitude or longitude are equal
+     */
     @Test
-    public void filterTestFailure() throws IOException {
+    public void filterTestFailure(){
         GeoJsonHandler handler = new GeoJsonHandler();
         List<GeoJsonHandler.Features> filterFeatures = handler.filterFeatures(0, 0, 0,0);
         assertEquals(filterFeatures.size(), 0);
     }
 
+    /**
+     * Fuzz testing that makes sure that all random coordinates are accounted for and do not break the program
+     * @throws IOException in case the connection fails
+     */
     @Test
     public void numGenerator() throws IOException {
         for (int i = 0; i < 100; i ++){
