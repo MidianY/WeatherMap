@@ -2,6 +2,7 @@ package edu.brown.cs.student.server;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 import edu.brown.cs.student.server.errorRepsonses.BadJsonError;
 import edu.brown.cs.student.server.weather.ForecastProperties;
 import spark.QueryParamsMap;
@@ -10,12 +11,10 @@ import spark.Response;
 import spark.Route;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GeoJsonHandler implements Route {
     private FeatureCollection data;
@@ -37,6 +36,8 @@ public class GeoJsonHandler implements Route {
 
     @Override
     public Object handle(Request request, Response response) throws Exception {
+        Map<String, Object> resp = new HashMap<>();
+
         QueryParamsMap qm = request.queryMap();
         String minLat = qm.value("minLat");
         String maxLat = qm.value("maxLat");
@@ -54,7 +55,8 @@ public class GeoJsonHandler implements Route {
 
             List<Features> finalList = this.filterFeatures(fMinLon, fMaxLon, fMinLat, fMaxLat);
 
-            return new GeoJsonSuccessResponse(finalList).serialize();
+            resp.put("data", new FeatureCollection(this.data.type(), finalList));
+            return this.success(resp);
 
         } catch (Exception e) {
             return new BadJsonError().serialize();
@@ -83,17 +85,15 @@ public class GeoJsonHandler implements Route {
 
     }
 
-    public record GeoJsonSuccessResponse(List<Features> data) {
-        /**
-         * @return this response, serialized as Json
-         */
-        String serialize() {
-            HashMap<String, Object> result = new HashMap<>();
-            result.put("data", data);
-            result.put("result", "success");
-            Moshi moshi = new Moshi.Builder().build();
-            return moshi.adapter(Map.class).toJson(result);
-        }
+    public String serialize(Map<String, Object> resp) {
+        Moshi moshi = new Moshi.Builder().build();
+        Type respType = Types.newParameterizedType(Map.class, String.class, Object.class);
+        return moshi.adapter(respType).toJson(resp);
+    }
+
+    public String success(Map<String, Object> resp) {
+        resp.put("result", "success");
+        return this.serialize(resp);
     }
 
     public record FeatureCollection(String type, List<Features> features) {}

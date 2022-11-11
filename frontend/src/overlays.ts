@@ -11,38 +11,64 @@ interface LoadMapResponse {
 }
 
 
-async function getMap(): Promise<string> {
-  const SERVER = `http://localhost:3232`
-  return fetch(`${SERVER}/geo_data?minLat=33&maxLat=35&minLon=-86&maxLon=-84`)
-  .then(loadResponse => loadResponse.json())
-  .then((loadResponseJson: LoadMapResponse) => {
-      if (loadResponseJson.result == `success`) {
-          console.log("response " + loadResponseJson.result);
-          console.log("points: " + loadResponseJson.data);
-          const mapData = loadResponseJson.data
-          return mapData.toString()
-      // if get fail, return get result (i don't think this would happen)
-      } else {
-        return 'unable to load map overlay data'
-      }
-      })
+// async function getMap(): Promise<string> {
+//   const SERVER = `http://localhost:3232`
+//   return fetch(`${SERVER}/geo_data?minLat=0&maxLat=35&minLon=-100&maxLon=100`)
+//   .then(loadResponse => loadResponse.json())
+//   .then((loadResponseJson: LoadMapResponse) => {
+//       if (loadResponseJson.result == `success`) {
+//           console.log("response " + loadResponseJson.result);
+//           console.log("points: " + loadResponseJson.data);
+//           const mapData = loadResponseJson.data
+//           return mapData.toString()
+//       // if get fail, return get result (i don't think this would happen)
+//       } else {
+//         return 'unable to load map overlay data'
+//       }
+//       })
+//   }
+
+//    const rl_data1 = getMap()
+
+
+
+ function isFeatureCollection(json: any): json is FeatureCollection {
+  return json.type === "FeatureCollection";
+}
+
+// export function overlayData(): GeoJSON.FeatureCollection | undefined {
+//   if(isFeatureCollection(rl_data))
+//     return rl_data
+//   return undefined
+// }
+
+export function overlayData(response : any):GeoJSON.FeatureCollection | undefined{
+
+  if(isFeatureCollection(response)) {
+      console.log("true")
+      return response;
   }
-
-   const rl_data1 = getMap()
-
-
-
-// Type predicate for FeatureCollection
-function isFeatureCollection(json: any): json is FeatureCollection {
-    return json.type === "FeatureCollection"
-}
-
-export function overlayData(): GeoJSON.FeatureCollection | undefined {
-  if(isFeatureCollection(rl_data))
-    return rl_data
   return undefined
+  
 }
 
+
+
+
+const BASE_URL = "http://localhost:3232/";
+
+export function fetchMapData(minLat: number, maxLat: number, minLon: number, maxLon: number): Promise<FeatureCollection | undefined> {
+  const url: string =
+  BASE_URL + `geo_data?minLat=${minLat}&maxLat=${maxLat}&minLon=${minLon}&maxLon=${maxLon}`;
+  return fetch(url)
+    .then((res) => res.json())
+    .then((json) => {
+      if (isFeatureCollection(json.data)) {
+        {console.log("fulfilled"); return json.data};
+      }
+      return undefined;
+    });
+}
 
 ////////////////////////////////////
 
