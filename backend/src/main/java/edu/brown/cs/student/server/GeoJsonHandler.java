@@ -45,7 +45,7 @@ public class GeoJsonHandler implements Route {
         String maxLon = qm.value("maxLon");
 
         try {
-            if (!qm.hasKey("minLat") | !qm.hasKey("maxLat") | !qm.hasKey("minLon") | !qm.hasKey("maxLon")) {
+            if (!qm.hasKey("minLat") | !qm.hasKey("maxLat") | !qm.hasKey("minLon") | !qm.hasKey("maxLon") | qm.toMap().keySet().size() != 4) {
                 return new BadJsonError().serialize();
             }
             float fMinLat = Float.parseFloat(minLat);

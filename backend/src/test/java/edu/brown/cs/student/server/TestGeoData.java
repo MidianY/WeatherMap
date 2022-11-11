@@ -68,8 +68,41 @@ public class TestGeoData {
     }
 
     @Test
-    public void testWordInput() throws IOException {
+    public void testWrongInput() throws IOException {
         HttpURLConnection clientConnection = tryRequest("geo_data?minLat=a&maxLat=b&minLon=c&maxLon=d");
+        assertEquals(200, clientConnection.getResponseCode());
+        Moshi moshi = new Moshi.Builder().build();
+        Map response =
+                moshi.adapter(Map.class).fromJson(new Buffer().readFrom(clientConnection.getInputStream()));
+        Map<String, Object> expectedResponse = new HashMap<>();
+        expectedResponse.put("result", "error_bad_json");
+        assertEquals(expectedResponse, response);
+
+
+        clientConnection = tryRequest("geo_data?minat=33&maxat=35&minon=-86&maxon=-84");
+        assertEquals(200, clientConnection.getResponseCode());
+        moshi = new Moshi.Builder().build();
+        response =
+                moshi.adapter(Map.class).fromJson(new Buffer().readFrom(clientConnection.getInputStream()));
+        expectedResponse.clear();
+        expectedResponse.put("result", "error_bad_json");
+        assertEquals(expectedResponse, response);
+
+
+        clientConnection = tryRequest("geo_data?minLat=33&maxLat=35&minLon=-86&maxLon=-84&lon=78");
+        assertEquals(200, clientConnection.getResponseCode());
+        moshi = new Moshi.Builder().build();
+        response =
+                moshi.adapter(Map.class).fromJson(new Buffer().readFrom(clientConnection.getInputStream()));
+        expectedResponse.clear();
+        expectedResponse.put("result", "error_bad_json");
+        assertEquals(expectedResponse, response);
+        clientConnection.disconnect();
+    }
+
+    @Test
+    public void testNoInput() throws IOException {
+        HttpURLConnection clientConnection = tryRequest("geo_data");
         assertEquals(200, clientConnection.getResponseCode());
         Moshi moshi = new Moshi.Builder().build();
         Map response =
@@ -81,8 +114,8 @@ public class TestGeoData {
     }
 
     @Test
-    public void testNoInput() throws IOException {
-        HttpURLConnection clientConnection = tryRequest("geo_data");
+    public void testMissingInput() throws IOException {
+        HttpURLConnection clientConnection = tryRequest("geo_data?minLat=33&maxLat=35");
         assertEquals(200, clientConnection.getResponseCode());
         Moshi moshi = new Moshi.Builder().build();
         Map response =
@@ -113,6 +146,7 @@ public class TestGeoData {
         expectedResponse.clear();
         expectedResponse.put("result", "success");
         assertEquals(expectedResponse.get("result"), response.get("result"));
+        Assert.assertTrue(response.containsKey("data"));
         clientConnection.disconnect();
     }
 
@@ -126,6 +160,7 @@ public class TestGeoData {
         Map<String, Object> expectedResponse = new HashMap<>();
         expectedResponse.put("result", "success");
         assertEquals(expectedResponse.get("result"), response.get("result"));
+        Assert.assertTrue(response.containsKey("data"));
 
 
         clientConnection = tryRequest("geo_data");
@@ -203,10 +238,10 @@ public class TestGeoData {
     @Test
     public void numGenerator() throws IOException {
         for (int i = 0; i < 100; i ++){
-            int minLon = (int)(Math.random()* 1000);
-            int maxLon = (int)(Math.random()* 1000);
-            int minLat = (int)(Math.random()* 1000);
-            int maxLat = (int)(Math.random()* 1000);
+            int minLon = (int)(Math.random()* 2000 - 1000);
+            int maxLon = (int)(Math.random()* 2000 - 1000);
+            int minLat = (int)(Math.random()* 2000 - 1000);
+            int maxLat = (int)(Math.random()* 2000 - 1000);
             HttpURLConnection clientConnection = tryRequest("geo_data?minLat=" + minLat+"&maxLat="+maxLat+"" +
                     "&minLon="+minLon+"&maxLon="+maxLon);
             assertEquals(200, clientConnection.getResponseCode());
